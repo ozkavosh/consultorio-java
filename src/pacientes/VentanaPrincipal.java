@@ -1,0 +1,531 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package pacientes;
+
+import java.awt.event.KeyEvent;
+import java.sql.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JOptionPane;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.DefaultTableModel;
+import static pacientes.VentanaPrincipal.JDBC_URL;
+
+/**
+ *
+ * @author vgtx
+ */
+public class VentanaPrincipal extends javax.swing.JFrame {
+
+    public static final String DRIVER = "org.apache.derby.jdbc.EmbeddedDriver";
+    public static final String JDBC_URL = "jdbc:derby:pacientesdb;create=true";
+    private String cuilActual;
+
+    public VentanaPrincipal() throws ClassNotFoundException, SQLException {
+        initComponents();
+
+        Class.forName(DRIVER);
+
+        try {
+            Connection con = DriverManager.getConnection(JDBC_URL);
+            con.createStatement().execute("CREATE TABLE pacientes(nombre VARCHAR(40), apellido VARCHAR(40), cuil BIGINT PRIMARY KEY, consultas INT)");
+        } catch (Exception e) {
+
+        }
+
+        this.getRootPane().setDefaultButton(btnCargar);
+        this.setLocationRelativeTo(null);
+        this.pack();
+
+        tablaPacientes.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent event) {
+                if(!event.getValueIsAdjusting() && tablaPacientes.getSelectedRow() != -1){
+                   cuilActual = tablaPacientes.getValueAt(tablaPacientes.getSelectedRow(), 2).toString();
+                }
+            }
+        });
+
+        tablaPacientes.setModel(getPacientes());
+    }
+
+    private DefaultTableModel getPacientes() {
+        try {
+            Connection con = DriverManager.getConnection(JDBC_URL);
+            Statement sql = con.createStatement();
+            ResultSet res = sql.executeQuery("select * from pacientes");
+            ResultSetMetaData metadata = res.getMetaData();
+
+            DefaultTableModel datos = new DefaultTableModel();
+
+            datos.addColumn(metadata.getColumnName(1));
+            datos.addColumn(metadata.getColumnName(2));
+            datos.addColumn(metadata.getColumnName(3));
+            datos.addColumn(metadata.getColumnName(4));
+
+            while (res.next()) {
+                Object[] fila = new Object[4];
+                fila[0] = res.getString(1);
+                fila[1] = res.getString(2);
+                fila[2] = res.getString(3);
+                fila[3] = res.getString(4);
+                datos.addRow(fila);
+            }
+
+            con.close();
+
+            return datos;
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e, "Error!", 1);
+            System.out.println(e);
+
+            return null;
+        }
+    }
+
+    private DefaultTableModel getPacientes(String busqueda) {
+        try {
+            Connection con = DriverManager.getConnection(JDBC_URL);
+            Statement sql = con.createStatement();
+            busqueda = busqueda.toLowerCase();
+
+            ResultSet res = sql.executeQuery("select * from pacientes");
+
+            /*
+            if (busqueda.matches("[0-9]*")) {
+                res = sql.executeQuery("select * from pacientes where cuil = " + busqueda);
+            } else {
+                res = sql.executeQuery("select * from pacientes where nombre = '" + busqueda + "' or apellido = '" + busqueda + "'");
+            }*/
+            ResultSetMetaData metadata = res.getMetaData();
+
+            DefaultTableModel datos = new DefaultTableModel();
+
+            datos.addColumn(metadata.getColumnName(1));
+            datos.addColumn(metadata.getColumnName(2));
+            datos.addColumn(metadata.getColumnName(3));
+            datos.addColumn(metadata.getColumnName(4));
+
+            while (res.next()) {
+                Object[] fila = new Object[4];
+                fila[0] = res.getString(1);
+                fila[1] = res.getString(2);
+                fila[2] = res.getString(3);
+                fila[3] = res.getString(4);
+
+                if (res.getString(3).contains(busqueda) || res.getString(2).toLowerCase().contains(busqueda) || res.getString(1).toLowerCase().contains(busqueda)) {
+                    datos.addRow(fila);
+                }
+            }
+
+            con.close();
+
+            return datos;
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error al conectar con la base de datos", "Error!", 1);
+            System.out.println(e);
+
+            return null;
+        }
+    }
+
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        campoBusqueda = new javax.swing.JTextField();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        tablaPacientes = new javax.swing.JTable();
+        jLabel1 = new javax.swing.JLabel();
+        btnBuscar = new javax.swing.JButton();
+        campoNombre = new javax.swing.JTextField();
+        jLabel2 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        campoApellido = new javax.swing.JTextField();
+        jLabel4 = new javax.swing.JLabel();
+        campoCUIL = new javax.swing.JTextField();
+        jLabel5 = new javax.swing.JLabel();
+        btnCargar = new javax.swing.JButton();
+        btnAgregar = new javax.swing.JButton();
+        btnReiniciar = new javax.swing.JButton();
+        jLabel6 = new javax.swing.JLabel();
+        btnEliminar = new javax.swing.JButton();
+        btnEditar = new javax.swing.JButton();
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle("Pacientes | Consultas");
+
+        campoBusqueda.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                campoBusquedaActionPerformed(evt);
+            }
+        });
+        campoBusqueda.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                campoBusquedaKeyPressed(evt);
+            }
+        });
+
+        tablaPacientes.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {"Prueba1", "Prueba", "20431631572", "2"},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Nombre", "Apellido", "CUIL", "Consultas"
+            }
+        ));
+        tablaPacientes.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tablaPacientesMouseClicked(evt);
+            }
+        });
+        jScrollPane1.setViewportView(tablaPacientes);
+
+        jLabel1.setText("Nombre o CUIL");
+
+        btnBuscar.setText("Buscar");
+        btnBuscar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnBuscarActionPerformed(evt);
+            }
+        });
+
+        jLabel2.setText("Agregar Paciente");
+
+        jLabel3.setText("Nombre");
+
+        jLabel4.setText("Apellido");
+
+        jLabel5.setText("Nro. de CUIL");
+
+        btnCargar.setText("Cargar");
+        btnCargar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCargarActionPerformed(evt);
+            }
+        });
+
+        btnAgregar.setText("Agregar");
+        btnAgregar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAgregarActionPerformed(evt);
+            }
+        });
+
+        btnReiniciar.setBackground(new java.awt.Color(255, 102, 102));
+        btnReiniciar.setText("Reiniciar");
+        btnReiniciar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnReiniciarActionPerformed(evt);
+            }
+        });
+
+        jLabel6.setText("Consultas");
+
+        btnEliminar.setBackground(new java.awt.Color(255, 102, 102));
+        btnEliminar.setText("Eliminar");
+        btnEliminar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnEliminarActionPerformed(evt);
+            }
+        });
+
+        btnEditar.setText("Editar");
+        btnEditar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnEditarActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(32, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 702, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(campoBusqueda, javax.swing.GroupLayout.PREFERRED_SIZE, 147, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(btnBuscar))
+                            .addComponent(jLabel1))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(btnAgregar)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(btnReiniciar))
+                            .addComponent(jLabel6)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(campoNombre, javax.swing.GroupLayout.PREFERRED_SIZE, 131, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel3))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(campoApellido, javax.swing.GroupLayout.PREFERRED_SIZE, 128, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel4))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(campoCUIL, javax.swing.GroupLayout.PREFERRED_SIZE, 147, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(btnCargar))
+                                    .addComponent(jLabel5)))
+                            .addComponent(jLabel2))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(btnEditar, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(btnEliminar, javax.swing.GroupLayout.Alignment.TRAILING))))
+                .addGap(34, 34, 34))
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel1)
+                    .addComponent(jLabel6))
+                .addGap(4, 4, 4)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(campoBusqueda)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(btnBuscar)
+                        .addComponent(btnAgregar)
+                        .addComponent(btnReiniciar)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 322, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(18, 18, 18)
+                        .addComponent(jLabel2)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel3)
+                            .addComponent(jLabel4)
+                            .addComponent(jLabel5)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(29, 29, 29)
+                        .addComponent(btnEditar)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(campoNombre)
+                    .addComponent(campoApellido)
+                    .addComponent(campoCUIL)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(btnCargar)
+                        .addComponent(btnEliminar)))
+                .addContainerGap())
+        );
+
+        pack();
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void campoBusquedaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_campoBusquedaActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_campoBusquedaActionPerformed
+
+    private void btnCargarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCargarActionPerformed
+        String nombre = campoNombre.getText();
+        String apellido = campoApellido.getText();
+        String cuil = campoCUIL.getText();
+
+        try {
+            Connection con = DriverManager.getConnection(JDBC_URL);
+            con.createStatement().execute("insert into pacientes values ('" + nombre + "', '" + apellido + "', " + cuil + ", 0)");
+            campoNombre.setText("");
+            campoApellido.setText("");
+            campoCUIL.setText("");
+            tablaPacientes.setModel(getPacientes());
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Revise los campos e intente nuevamente", "Error!", 1);
+            System.out.println(e);
+        }
+    }//GEN-LAST:event_btnCargarActionPerformed
+
+    private void btnAgregarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAgregarActionPerformed
+        if (tablaPacientes.getSelectedRow() != -1) {
+            int row = tablaPacientes.getSelectedRow();
+            String cuil = tablaPacientes.getValueAt(row, 2).toString();
+            int consultas = Integer.parseInt(tablaPacientes.getValueAt(row, 3).toString());
+            consultas++;
+
+            Connection con;
+            try {
+                con = DriverManager.getConnection(JDBC_URL);
+                con.createStatement().execute("update pacientes set consultas = " + consultas + " where cuil = " + cuil);
+                tablaPacientes.setModel(getPacientes());
+                con.close();
+            } catch (SQLException ex) {
+                Logger.getLogger(VentanaPrincipal.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }//GEN-LAST:event_btnAgregarActionPerformed
+
+    private void tablaPacientesMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tablaPacientesMouseClicked
+
+    }//GEN-LAST:event_tablaPacientesMouseClicked
+
+    private void btnReiniciarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnReiniciarActionPerformed
+        int opc = JOptionPane.showConfirmDialog(null, "Esta seguro de reiniciar todas las consultas", "Reinicar consultas", JOptionPane.YES_NO_OPTION);
+
+        if (opc == JOptionPane.YES_OPTION) {
+            Connection con;
+            try {
+                con = DriverManager.getConnection(JDBC_URL);
+                con.createStatement().execute("update pacientes set consultas = 0");
+                tablaPacientes.setModel(getPacientes());
+                con.close();
+            } catch (SQLException ex) {
+                Logger.getLogger(VentanaPrincipal.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }//GEN-LAST:event_btnReiniciarActionPerformed
+
+    private void btnBuscarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBuscarActionPerformed
+        String busqueda = campoBusqueda.getText();
+
+        if (busqueda.length() > 0) {
+            tablaPacientes.setModel(getPacientes(busqueda));
+            campoBusqueda.setText("");
+        } else {
+            tablaPacientes.setModel(getPacientes());
+        }
+    }//GEN-LAST:event_btnBuscarActionPerformed
+
+    private void btnEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarActionPerformed
+        if (tablaPacientes.getSelectedRow() != -1) {
+            int opc = JOptionPane.showConfirmDialog(null, "¿Esta seguro de eliminar el paciente?", "Eliminar paciente", JOptionPane.YES_NO_OPTION);
+            if (opc == JOptionPane.YES_OPTION) {
+                int row = tablaPacientes.getSelectedRow();
+                String cuil = tablaPacientes.getValueAt(row, 2).toString();
+
+                Connection con;
+                try {
+                    con = DriverManager.getConnection(JDBC_URL);
+                    con.createStatement().execute("delete from pacientes where cuil = " + cuil);
+                    tablaPacientes.setModel(getPacientes());
+                    con.close();
+                } catch (SQLException ex) {
+                    Logger.getLogger(VentanaPrincipal.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }
+    }//GEN-LAST:event_btnEliminarActionPerformed
+
+    private void campoBusquedaKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_campoBusquedaKeyPressed
+        if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
+            String busqueda = campoBusqueda.getText();
+
+            if (busqueda.length() > 0) {
+                tablaPacientes.setModel(getPacientes(busqueda));
+                campoBusqueda.setText("");
+            } else {
+                tablaPacientes.setModel(getPacientes());
+            }
+        }
+    }//GEN-LAST:event_campoBusquedaKeyPressed
+
+    private void btnEditarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEditarActionPerformed
+        if(tablaPacientes.getSelectedRow() != -1){
+            int row = tablaPacientes.getSelectedRow();
+            String nombre = tablaPacientes.getValueAt(row, 0).toString();
+            String apellido = tablaPacientes.getValueAt(row, 1).toString();
+            String cuil = tablaPacientes.getValueAt(row, 2).toString();
+            
+            Connection con;
+            try {
+                con = DriverManager.getConnection(JDBC_URL);
+                PreparedStatement sql = con.prepareStatement("update pacientes set nombre = ?, apellido = ?, cuil = ? where cuil = ?");
+                sql.setString(1, nombre);
+                sql.setString(2, apellido);
+                sql.setString(3, cuil);
+                sql.setString(4, cuilActual);
+                
+                sql.execute();
+                //con.createStatement().execute("update pacientes set consultas = " + consultas + " where cuil = " + cuil);
+                tablaPacientes.setModel(getPacientes());
+                con.close();
+            } catch (SQLException ex) {
+                Logger.getLogger(VentanaPrincipal.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }//GEN-LAST:event_btnEditarActionPerformed
+
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String args[]) {
+        /* Set the Nimbus look and feel */
+        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         */
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(VentanaPrincipal.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(VentanaPrincipal.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(VentanaPrincipal.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(VentanaPrincipal.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //</editor-fold>
+
+        /* Create and display the form */
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                try {
+                    new VentanaPrincipal().setVisible(true);
+                } catch (ClassNotFoundException ex) {
+                    Logger.getLogger(VentanaPrincipal.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (SQLException ex) {
+                    Logger.getLogger(VentanaPrincipal.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        });
+    }
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnAgregar;
+    private javax.swing.JButton btnBuscar;
+    private javax.swing.JButton btnCargar;
+    private javax.swing.JButton btnEditar;
+    private javax.swing.JButton btnEliminar;
+    private javax.swing.JButton btnReiniciar;
+    private javax.swing.JTextField campoApellido;
+    private javax.swing.JTextField campoBusqueda;
+    private javax.swing.JTextField campoCUIL;
+    private javax.swing.JTextField campoNombre;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JTable tablaPacientes;
+    // End of variables declaration//GEN-END:variables
+}
